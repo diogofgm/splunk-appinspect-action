@@ -1,0 +1,80 @@
+name: AppInspect
+
+on:
+  workflow_call:
+    inputs:
+      ucc_gen_version:
+        description: "ucc-gen version to install"
+        required: false
+        type: string
+        default: "5.10.2"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      addon_name: ${{ steps.addon_name.outputs.ADDON_NAME }}
+      addon_version: ${{ steps.addon_version.outputs.ADDON_VERSION }}
+    steps:
+      - uses: actions/checkout@v2.4.0
+      - uses: actions/setup-python@v2.3.1
+        with:
+          python-version: 3.7
+      - name: Get version
+        id: addon_version
+        run: |
+          ADDON_VERSION=$(cat package/default/app.conf | grep -e ^version | awk '{print $3}')
+          echo "::set-output name=ADDON_VERSION::$ADDON_VERSION"
+      - name: Get addon name
+        id: addon_name
+        run: |
+          ADDON_NAME=$(cat package/default/app.conf | grep -e ^id | awk '{print $3}')
+          echo "::set-output name=ADDON_NAME::$ADDON_NAME"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade splunk-packaging-toolkit==1.0.1 splunk-add-on-ucc-framework==${{ inputs.ucc_gen_version }}
+      - name: Building app
+        run: |
+          ucc-gen --ta-version ${{ steps.addon_version.outputs.ADDON_VERSION }}
+      - name: Packaging app
+        run: |
+          mkdir dist
+          slim package output/${{ steps.addon_name.outputs.ADDON_NAME }} -o dist/
+      - uses: actions/upload-artifact@v2.3.1
+        with:
+          name: ${{ steps.addon_name.outputs.ADDON_NAME }}-${{ steps.addon_version.outputs.ADDON_VERSION }}.tar.gz
+          path: dist/
+
+  appinspect-cli:
+    name: appinspect-cli ${{ matrix.tags }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs: build
+    strategy:
+      matrix:
+        tags:
+          - "cloud"
+          - "appapproval"
+          - "deprecated_feature"
+          - "developer_guidance"
+          - "future"
+          - "self-service"
+          - "splunk_appinspect"
+    steps:
+      - uses: actions/checkout@v2.4.0
+      - uses: actions/setup-python@v2.3.1
+        with:
+          python-version: "3.7"
+      - uses: actions/download-artifact@v2.1.0
+        with:
+          name: ${{ needs.build.outputs.ADDON_NAME }}-${{ needs.build.outputs.ADDON_VERSION }}.tar.gz
+          path: dist
+      - uses: splunk/appinspect-cli-action@v1.4.7
+        with:
+          app_path: dist/${{ needs.build.outputs.ADDON_NAME }}-${{ needs.build.outputs.ADDON_VERSION }}.tar.gz
+          included_tags: ${{ matrix.tags }}
+      - uses: actions/upload-artifact@v2.3.1
+        with:
+          name: appinspect_result_${{ matrix.tags }}.json
+          path: appinspect_result.json
