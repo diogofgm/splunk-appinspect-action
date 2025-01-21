@@ -41,7 +41,7 @@ jobs:
         run: |
           mkdir dist
           slim package output/${{ steps.addon_name.outputs.ADDON_NAME }} -o dist/
-      - uses: actions/upload-artifact@v4.4.3
+      - uses: actions/upload-artifact@v4.6.0
         with:
           name: ${{ steps.addon_name.outputs.ADDON_NAME }}-${{ steps.addon_version.outputs.ADDON_VERSION }}.tar.gz
           path: dist/
@@ -74,7 +74,7 @@ jobs:
         with:
           app_path: dist/${{ needs.build.outputs.ADDON_NAME }}-${{ needs.build.outputs.ADDON_VERSION }}.tar.gz
           included_tags: ${{ matrix.tags }}
-      - uses: actions/upload-artifact@v4.4.3
+      - uses: actions/upload-artifact@v4.6.0
         with:
           name: appinspect_result_${{ matrix.tags }}.json
           path: appinspect_result.json
