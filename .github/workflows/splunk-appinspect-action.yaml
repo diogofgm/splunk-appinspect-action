@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4.2.1
       - uses: actions/setup-python@v5.3.0
         with:
-          python-version: 3.7
+          python-version: 3.9
       - name: Get version
         id: addon_version
         run: |
@@ -65,7 +65,7 @@ jobs:
       - uses: actions/checkout@v4.2.1
       - uses: actions/setup-python@v5.3.0
         with:
-          python-version: "3.7"
+          python-version: "3.9"
       - uses: actions/download-artifact@v4.1.8
         with:
           name: ${{ needs.build.outputs.ADDON_NAME }}-${{ needs.build.outputs.ADDON_VERSION }}.tar.gz
