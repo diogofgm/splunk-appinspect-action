@@ -17,7 +17,7 @@ jobs:
       addon_version: ${{ steps.addon_version.outputs.ADDON_VERSION }}
     steps:
       - uses: actions/checkout@v4.2.1
-      - uses: actions/setup-python@v5.3.0
+      - uses: actions/setup-python@v5.4.0
         with:
           python-version: 3.9
       - name: Get version
@@ -63,7 +63,7 @@ jobs:
           - "splunk_appinspect"
     steps:
       - uses: actions/checkout@v4.2.1
-      - uses: actions/setup-python@v5.3.0
+      - uses: actions/setup-python@v5.4.0
         with:
           python-version: "3.9"
       - uses: actions/download-artifact@v4.1.8
